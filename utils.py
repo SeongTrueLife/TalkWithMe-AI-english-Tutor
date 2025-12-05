@@ -1,5 +1,6 @@
 import os
 import uuid
+import streamlit as st
 from dotenv import load_dotenv
 import azure.cognitiveservices.speech as speechsdk
 from openai import AzureOpenAI
@@ -7,16 +8,22 @@ from openai import AzureOpenAI
 #1. 환경 변수 로드(.env 파일 불러오기)
 load_dotenv()
 
+# [NEW] 환경 변수 가져오기 헬퍼 함수 (로컬/배포 환경 호환)
+def get_secret(key):
+    if key in st.secrets:
+        return st.secrets[key]
+    return os.getenv(key)
+
 #1. OpenAI 설정(뇌)
 def get_openai_response(messages):
     try:
         client = AzureOpenAI(
-        api_key= os.getenv("AZURE_OPENAI_API_KEY"),
-        api_version=os.getenv("AZURE_OPENAI_API_VERSION"),
-        azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT")
+        api_key= get_secret("AZURE_OPENAI_API_KEY"),
+        api_version=get_secret("AZURE_OPENAI_API_VERSION"),
+        azure_endpoint=get_secret("AZURE_OPENAI_ENDPOINT")
     )
 
-        deployment_name = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
+        deployment_name = get_secret("AZURE_OPENAI_DEPLOYMENT_NAME")
         print(f"AI 모델{deployment_name}에게 질문하는 중...")
 
         response = client.chat.completions.create(
@@ -35,12 +42,12 @@ def get_feedback_report(messages):
     """
     try:
         client = AzureOpenAI(
-            api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-            api_version=os.getenv("AZURE_OPENAI_API_VERSION"),
-            azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT")
+            api_key=get_secret("AZURE_OPENAI_API_KEY"),
+            api_version=get_secret("AZURE_OPENAI_API_VERSION"),
+            azure_endpoint=get_secret("AZURE_OPENAI_ENDPOINT")
         )
 
-        deployment_name = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
+        deployment_name = get_secret("AZURE_OPENAI_DEPLOYMENT_NAME")
         
         # 시스템 프롬프트: 선생님 역할 부여
         system_prompt = """
@@ -80,8 +87,8 @@ def get_feedback_report(messages):
 #2. Azure STT + 발음 평가 (귀)
 def speech_to_text(audio_file_path):
     try:
-        speech_key = os.getenv("SPEECH_KEY")
-        speech_region = os.getenv("SPEECH_REGION")
+        speech_key = get_secret("SPEECH_KEY")
+        speech_region = get_secret("SPEECH_REGION")
 
         speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=speech_region)
         speech_config.speech_recognition_language = "en-US" #나중에 삭제할수도 있음-사용자가한국어쓸때
@@ -146,8 +153,8 @@ def speech_to_text(audio_file_path):
 #Azure TTS(ai의 입)
 def text_to_speech(text):
     try:
-        speech_key = os.getenv('SPEECH_KEY')
-        speech_region = os.getenv('SPEECH_REGION')
+        speech_key = get_secret('SPEECH_KEY')
+        speech_region = get_secret('SPEECH_REGION')
         
         speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=speech_region)
         speech_config.speech_synthesis_voice_name = 'en-US-JennyNeural'
