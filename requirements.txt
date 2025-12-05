@@ -1,0 +1,6 @@
+streamlit
+openai
+azure-cognitiveservices-speech
+python-dotenv
+streamlit-mic-recorder
+imageio-ffmpeg

@@ -1,0 +1,19 @@
+# Environment variables
+.env
+
+# Virtual Environment
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Audio files (Don't upload test recordings)
+*.wav
+*.webm
+*.mp3
+
+# OS generated files
+.DS_Store
+Thumbs.db
